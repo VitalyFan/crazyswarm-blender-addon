@@ -469,7 +469,7 @@ p(T) &= p_1, & p'(T) &= v_1, & p''(T) &= a_1, & p'''(T) &= 0.
 
 ## Автор
 
-**Fan In Su**
+**Фан Ин Су/Fan In Su/황인수**
 
 This add-on was developed as part of my Bachelor’s graduation project at RTU MIREA (Moscow).
 
