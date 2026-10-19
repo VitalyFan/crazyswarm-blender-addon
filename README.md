@@ -154,33 +154,45 @@
 
 ```python
 from pathlib import Path
+import numpy as np
+import time
 
 from crazyflie_py import Crazyswarm
 from crazyflie_py.uav_trajectory import Trajectory
-
 
 def main():
     swarm = Crazyswarm()
     timeHelper = swarm.timeHelper
     allcfs = swarm.allcfs
+    trajs1 = []
+    #trajs2 = []
+    n = 2  # number of distinct trajectories
 
-    traj_dir = Path(__file__).parent / "trajectories"
+    # enable logging
+    #allcfs.setParam('usd.logging', 1)
+
 
     # Загружаем каждому дрону его собственную траекторию: cf1 -> cf1.csv и т. д.
-    durations = []
-    for cf in allcfs.crazyflies:
-        traj = Trajectory()
-        traj.loadcsv(traj_dir / f"{cf.prefix.strip('/')}.csv")
-        cf.uploadTrajectory(0, 0, traj)
-        durations.append(traj.duration)
+    for i in range(n):
+        traj1 = Trajectory()
+        traj1.loadcsv(Path(__file__).parent / f'data/multi_trajectory/cf{i+1}.csv')
+        trajs1.append(traj1)
 
     allcfs.takeoff(targetHeight=1.0, duration=2.0)
     timeHelper.sleep(2.5)
 
-    # relative=False — координаты в CSV абсолютные (мировые координаты Blender).
-    # Перед стартом дрон должен находиться рядом с начальной точкой своей траектории.
-    allcfs.startTrajectory(0, timescale=1.0, relative=False)
-    timeHelper.sleep(max(durations) + 1.0)
+    TRIALS = 1
+    TIMESCALE = 1.0
+    for i in range(TRIALS):
+        for idx, cf in enumerate(allcfs.crazyflies):
+            cf.uploadTrajectory(0, 0, trajs1[idx])
+        
+        timeHelper.sleep(2.5)
+
+        # relative=False — координаты в CSV абсолютные (мировые координаты Blender).
+        # Перед стартом дрон должен находиться рядом с начальной точкой своей траектории.
+        allcfs.startTrajectory(0, timescale=TIMESCALE, relative=False)
+        timeHelper.sleep(max([t.duration for t in trajs1]) * TIMESCALE + 2.0)
 
     allcfs.land(targetHeight=0.02, duration=2.0)
     timeHelper.sleep(3.0)
@@ -464,7 +476,7 @@ This add-on was developed as part of my Bachelor’s graduation project at RTU M
 Связанные проекты:
 
 - [Crazyswarm2](https://github.com/IMRCLab/crazyswarm2) — ROS 2 стек для роя Crazyflie
-- [Crazyflie firmware](https://github.com/bitcraze/crazyflie-firmware) — прошивка
+- [Crazyflie firmware](https://github.com/VitalyFan/crazyflie-mirea) — модифицированная прошивка
   с high-level commander и поддержкой `poly4d` траекторий
 - [uav_trajectories](https://github.com/whoenig/uav_trajectories) — утилиты генерации
   траекторий того же формата
