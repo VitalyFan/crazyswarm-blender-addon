@@ -8,7 +8,6 @@
 ![Blender](https://img.shields.io/badge/Blender-5.1%2B-orange?logo=blender&logoColor=white)
 ![Crazyswarm2](https://img.shields.io/badge/Crazyswarm2-ROS%202-blue)
 ![Python](https://img.shields.io/badge/Python-3-yellow?logo=python&logoColor=white)
-![Version](https://img.shields.io/badge/version-0.0.5-lightgrey)
 
 ---
 
