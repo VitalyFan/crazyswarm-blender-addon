@@ -213,9 +213,9 @@ duration, x^0 … x^7, y^0 … y^7, z^0 … z^7, yaw^0 … yaw^7
 
 Внутри сегмента координата вычисляется так:
 
-$$
+```math
 p(t) = \sum_{i=0}^{7} c_i \, t^i, \qquad t \in [0,\, T_k],
-$$
+```
 
 где $t$ — **локальное** время от начала сегмента в секундах. Именно этот формат читает
 `Trajectory.loadcsv()` из Crazyswarm2 и выдают утилиты `uav_trajectories`.
@@ -261,8 +261,8 @@ flowchart TD
 1. вызывается `scene.frame_set(frame)`, и Blender полностью пересчитывает сцену;
 2. для каждого дрона берётся `matrix_world.to_translation()`, то есть итоговое мировое
    положение;
-3. запоминается время $t = (\text{frame} - \text{frame\_start}) \cdot \Delta t$, где
-   $\Delta t = 1 / \text{fps}$ (`fps = render.fps / render.fps_base`).
+3. запоминается время $t = (f - f_0) \cdot \Delta t$, где $f$ — номер кадра,
+   $f_0$ — `frame_start`, $\Delta t = 1 / \mathrm{fps}$ (`fps = render.fps / render.fps_base`).
 
 *Зачем так, а не читать F-кривые напрямую:* анимация объекта может определяться не только
 ключами, но и родителем, констрейнтами (Follow Path, Child Of...), драйверами и т. д.
@@ -273,9 +273,11 @@ flowchart TD
 
 ### Шаг 3. Выбор количества сегментов
 
-$$
-N = \min\!\left(\max\!\left(1,\ \mathrm{round}\!\left(\frac{T_{\text{total}}}{\text{segment\_duration}}\right)\right),\ 62\right)
-$$
+```math
+N = \min\left(\max\left(1,\ \mathrm{round}\left(\frac{T_{\mathrm{total}}}{T_{\mathrm{seg}}}\right)\right),\ 62\right)
+```
+
+где $T_{\mathrm{total}}$ — длительность анимации, $T_{\mathrm{seg}}$ — параметр *Segment duration*.
 
 *Почему не больше 62:* траектории хранятся в оперативной памяти Crazyflie объёмом 8 КБ.
 Один сегмент `poly4d` занимает 4 оси × 8 коэффициентов × 4 байта + 4 байта длительности =
@@ -293,9 +295,9 @@ $$
 
 1. Для каждого интервала сетки вычисляется «вес», то есть скорость плюс небольшая константа:
 
-   $$
+   ```math
    w_n = \frac{\lVert \mathbf{p}_{n+1} - \mathbf{p}_n \rVert}{\Delta t} + 10^{-3}
-   $$
+   ```
 
 2. Суммарный вес $W = \sum w_n$ делится на $N$ равных долей.
 3. Граница сегмента ставится там, где накопленный вес достигает очередной доли
@@ -338,24 +340,24 @@ $$
 
 Для каждого сегмента длительностью $T$ и каждой оси (`x`, `y`, `z`, `yaw`) ищется полином
 
-$$
+```math
 p(t) = \sum_{i=0}^{7} c_i t^i, \quad t \in [0, T],
-$$
+```
 
 удовлетворяющий 8 граничным условиям (`poly7_boundary`):
 
-$$
+```math
 \begin{aligned}
 p(0) &= p_0, & p'(0) &= v_0, & p''(0) &= a_0, & p'''(0) &= 0, \\
 p(T) &= p_1, & p'(T) &= v_1, & p''(T) &= a_1, & p'''(T) &= 0.
 \end{aligned}
-$$
+```
 
 Строка матрицы для производной порядка $d$ в момент $t$:
 
-$$
+```math
 \frac{d^d}{dt^d}\, t^i = \frac{i!}{(i-d)!}\, t^{\,i-d}, \quad i \ge d \qquad (\text{и } 0 \text{ при } i < d).
-$$
+```
 
 Получается система $A\mathbf{c} = \mathbf{b}$ размером 8×8.
 
